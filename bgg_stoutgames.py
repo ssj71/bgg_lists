@@ -17,8 +17,8 @@ delay = 5 #time to wait between server queries
 start = 0 #this should always be 0, except if debugging
 parse = True #this should always be True, except if debugging
 
-print("rank, name, minlen, weight/minlen, weight/maxlen") #header
 top = top1000 #this is the list of game ids
+print("rank","name", "minlen", "maxlen", "weight", "maxstout", "minstout", "stout", "string", sep=", ") #header
 for i in range(start,len(top),stride):
     group = top[i:i+stride]
     url = "https://www.boardgamegeek.com/xmlapi/boardgame/" + ",".join(str (n) for n in group) + "?stats=1"
@@ -29,13 +29,15 @@ for i in range(start,len(top),stride):
             name = [name.cdata for name in game.name if name['primary']=='true'][0]
             minlen = float(game.minplaytime.cdata)/60.0
             maxlen = float(game.maxplaytime.cdata)/60.0
+            midlen = (maxlen + minlen)/2.0
             weight = float(game.statistics.ratings.averageweight.cdata)
             rankcategories = game.statistics.ratings.ranks.rank
             if len(rankcategories) > 1:
                 rank = int(rankcategories[0]['value'])
             else:
                 rank = int(rankcategories['value'])
-            print(rank,name, minlen, weight/minlen, weight/maxlen,sep=", ")
+            stats = f"Weight: {weight:.3f} Length: {midlen:.3f} hr (±{midlen-minlen:.3f}) Stout Score: {weight/midlen:.4f}"
+            print(rank,name, minlen, maxlen, weight, weight/minlen, weight/maxlen, weight/midlen, stats, sep=", ")
     else:
         break
     time.sleep(delay)
