@@ -42,7 +42,7 @@ for i in range(start,len(top),stride):
                 rank = int(rankcategories[0]['value'])
             else:
                 rank = int(rankcategories['value'])
-            stats = f"Weight: {weight:.3f} Length: {midlen:.3f} hr (±{midlen-minlen:.3f}) Stout Score: {weight/midlen:.4f}"
+            stats = f"Weight: {weight+1.0:.3f} Length: {midlen:.3f} hr (±{midlen-minlen:.3f}) Stout Score: {weight/midlen:.4f}"
             print(rank,name, minlen, maxlen, weight+1.0,sep=", ",end=", ")
             print(weight/minlen, weight/maxlen, weight/midlen, stats, sep=", ")
     else:
