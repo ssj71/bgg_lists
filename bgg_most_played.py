@@ -40,9 +40,9 @@ rawtable = data[p:n]
 items = [int(m.group()) for m in re.finditer('(?<=href="/boardgame/)(\d+)(?=/)',rawtable)]
 #TODO: I can't quite get this regex to pick up all the special characters in the titles, I can use the xml api at some point
 #titles = [m.group() for m in re.finditer('(?<="   >)([\u00BF-\u1FFF\u2C00-\uD7FF\w:\-\s]+)(?=</a>)',data)]
-items = [int(m.group()) for m in re.finditer('(?<=href="/boardgame/)(\d+)(?=/)',rawtable)]
-print(len(items),len(titles))
-print(len(items),(titles))
+plays = [int(m.group()) for m in re.finditer('(?<=<td>\n)(\s+\d+\s+)(?=</td>)',rawtable)]
+players = [int(m.group()) for m in re.finditer('(?<=">)(\d+\s+)(?=</td>)',rawtable)]
+print(len(items),len(plays),len(players))
 exit()
 #top100 = top[0::3]
 #topstring = [m.group() for m in re.finditer('(?:href="/boardgame/)(\d+)(?:/)',data)]
