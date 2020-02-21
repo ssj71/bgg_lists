@@ -76,11 +76,7 @@ except IOError:
     t1m = np.array([a,b,c,d,e,f,g,h,i,j,k,l])
     np.save( "t1m", t1m )
 
-top10 = t12m[:,:10,:]
-top10monthly = t1m[:,:10,:]
-top10flattened = flatten(top10monthly)
 t1mflattened = flatten(t1m)
 t1mflattened.view('f8,f8,f8,f8')[::-1].sort( order=['f3'], axis=0)
-top10flattened.view('f8,f8,f8,f8')[::-1].sort( order=['f3'], axis=0)
 print(t1mflattened.shape)
-print(top10, "\n\n", top10flattened, "\n\n", t1mflattened[:10,:])
+print(t12m[:,:10,:], "\n\n" , t1mflattened[:10,:])
