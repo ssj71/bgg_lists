@@ -8,6 +8,27 @@ import calendar
 import numpy as np
 import bgg_most_played as bgg
 
+def flatten(mat):
+    groups = mat.shape[0]
+    rows = mat.shape[1]
+    out = mat[0] #start with the first submatrix
+    for g in range(1,groups):
+        for r in range(rows):
+            game = mat[g,r,1]
+            i = np.where( out[:,1] == game )[0]
+            if(i.size):
+                #game is already in the matrix
+                i = i[0]
+                for c in (0, 2, 3):
+                    out[i,c] += mat[g,r,c]
+            else:
+                #append row to matrix
+                out = np.vstack([out,mat[g,r]])
+    #average the rankings
+    out[:,0] /= groups
+    return out
+
+
 try:
    t12m = np.load( "t12m.npy" )
 except IOError:
@@ -55,3 +76,11 @@ except IOError:
     t1m = np.array([a,b,c,d,e,f,g,h,i,j,k,l])
     np.save( "t1m", t1m )
 
+top10 = t12m[:,:10,:]
+top10monthly = t1m[:,:10,:]
+top10flattened = flatten(top10monthly)
+t1mflattened = flatten(t1m)
+t1mflattened.view('f8,f8,f8,f8')[::-1].sort( order=['f3'], axis=0)
+top10flattened.view('f8,f8,f8,f8')[::-1].sort( order=['f3'], axis=0)
+print(t1mflattened.shape)
+print(top10, "\n\n", top10flattened, "\n\n", t1mflattened[:10,:])
