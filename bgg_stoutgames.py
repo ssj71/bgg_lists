@@ -17,12 +17,27 @@ delay = 4 #time (sec) to wait between server queries
 start = 0 #this should always be 0, except if debugging
 parse = True #this should always be True, except if debugging
 
-top = top2500 #this is the list of game ids
+
+##
+# @brief  get xml from bgg
+#
+# @param ids list of game ids
+#
+# @return  untangle xml object
+def getGameXML(ids):
+    #TODO: switch to api2
+    url = "https://www.boardgamegeek.com/xmlapi2/thing?id=" + ",".join(str (n) for n in ids) + "&stats=1"
+    url = "https://www.boardgamegeek.com/xmlapi/boardgame/" + ",".join(str (n) for n in group) + "?stats=1"
+    xml =  untangle.parse(url)
+    return xml
+
+top = top2500[0:100] #this is the list of game ids
 print("rank","name", "minlen", "maxlen", "weight", "maxstout", "minstout", "stout", "string", sep=", ") #header
 for i in range(start,len(top),stride):
     group = top[i:i+stride]
-    url = "https://www.boardgamegeek.com/xmlapi/boardgame/" + ",".join(str (n) for n in group) + "?stats=1"
-    xml =  untangle.parse(url)
+    #url = "https://www.boardgamegeek.com/xmlapi/boardgame/" + ",".join(str (n) for n in group) + "?stats=1"
+
+    xml = getGameXML(group) #untangle.parse(url)
     if(parse):
         for j in range(stride):
             game = xml.boardgames.boardgame[j]
