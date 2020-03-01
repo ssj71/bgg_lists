@@ -11,7 +11,7 @@ import bgg_most_played as bgg
 def flatten(mat):
     groups = mat.shape[0]
     rows = mat.shape[1]
-    out = mat[0] #start with the first submatrix
+    out = np.array(mat[0]) #start with the first submatrix
     for g in range(1,groups):
         for r in range(rows):
             game = mat[g,r,1]
@@ -27,6 +27,33 @@ def flatten(mat):
     #average the rankings
     out[:,0] /= groups
     return out
+
+def ranktrends(top):
+    (nperiods, ngames, col) = top.shape
+    gamelist = np.array([])
+    avgrank = np.array([])
+    trends = np.array([[]]) #TODO: initalize this to ngames x nperiods mat of ngames+1
+    for period_index, period in enumerate(top):
+        trends = np.hstack((trends, np.ones([trends.shape[0],1])*(ngames+1)))
+        print(trends.shape, ngames, trends[:10,:])
+        for game in period:
+            gameid = game[bgg.gameid_col]
+            rank = game[bgg.rank_col]
+            i = np.where( gamelist == gameid )[0]
+            if(i.size):
+                #update game
+                avgrank[i] += rank
+                trends[i,period_index] = rank
+            else:
+                #append
+                gamelist = np.append(gamelist, gameid)
+                avgrank = np.append(avgrank, rank+period_index*(ngames+1))
+                if(len(gamelist) > 1):
+                    trends = np.append(trends, np.ones([1,period_index+1])*(ngames+1), axis=0)
+                trends[:-1,:-1] = rank
+    print(gamelist.shape,avgrank.shape,trends.shape)
+    out = np.vstack((gamelist,avgrank,trends.T)).T
+    return out.view('f8,'*out.shape[1])#.sort( order=['f0'], axis=0)
 
 
 try:
@@ -78,5 +105,13 @@ except IOError:
 
 t1mflattened = flatten(t1m)
 t1mflattened.view('f8,f8,f8,f8')[::-1].sort( order=['f3'], axis=0)
-print(t1mflattened.shape)
-print(t12m[:,:10,:], "\n\n" , t1mflattened[:10,:])
+#print(t1mflattened.shape)
+#print(t12m[:,:10,:], "\n\n" , t1mflattened[:10,:])
+
+#matplotlib.pyplot.scatter(miles,prices)
+#matplotlib.pyplot.ylabel('price')
+#matplotlib.pyplot.xlabel('mileage')
+#matplotlib.pyplot.show()
+
+trends  = ranktrends(t1m);
+print(trends[:10,:])

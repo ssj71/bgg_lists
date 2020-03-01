@@ -8,12 +8,19 @@ import datetime
 import calendar
 import numpy as np
 
+#column ids
+rank_col = 0 #rank in period for most unique plays
+gameid_col = 1
+plays_col = 2
+uniqueplays_col = 3
+
 def add_months(sourcedate, months):
     month = sourcedate.month - 1 + months
     year = sourcedate.year + month // 12
     month = month % 12 + 1
     day = min(sourcedate.day, calendar.monthrange(year,month)[1])
     return datetime.date(year, month, day)
+
 
 def getNext100TPG(starty, startm, rangem, pagen):
     start = datetime.date(starty,startm,1)
