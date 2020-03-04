@@ -8,6 +8,8 @@ import calendar
 import numpy as np
 import bgg_most_played as bgg
 
+#takes a 3d matrix from bgg_most_played and
+#returns a 2d matrix with averaged rank, and summed play stats
 def flatten(mat):
     groups = mat.shape[0]
     rows = mat.shape[1]
@@ -28,14 +30,14 @@ def flatten(mat):
     out[:,0] /= groups
     return out
 
+#takes a 3d matrix from bgg_most_played and
+#returns a matrix of games rank per time period for plotting
 def ranktrends(top):
     (nperiods, ngames, col) = top.shape
-    gamelist = np.array([])
-    avgrank = np.array([])
-    trends = np.array([[]]) #TODO: initalize this to ngames x nperiods mat of ngames+1
+    gamelist = top[0,:,1]
+    avgrank = np.zeros([ngames,1])
+    trends = np.ones([ngames,nperiods])*(ngames+1)
     for period_index, period in enumerate(top):
-        trends = np.hstack((trends, np.ones([trends.shape[0],1])*(ngames+1)))
-        print(trends.shape, ngames, trends[:10,:])
         for game in period:
             gameid = game[bgg.gameid_col]
             rank = game[bgg.rank_col]
@@ -48,10 +50,8 @@ def ranktrends(top):
                 #append
                 gamelist = np.append(gamelist, gameid)
                 avgrank = np.append(avgrank, rank+period_index*(ngames+1))
-                if(len(gamelist) > 1):
-                    trends = np.append(trends, np.ones([1,period_index+1])*(ngames+1), axis=0)
-                trends[:-1,:-1] = rank
-    print(gamelist.shape,avgrank.shape,trends.shape)
+                trends = np.append(trends, np.ones([1,nperiods])*(ngames+1), axis=0)
+                trends[-1,-1] = rank
     out = np.vstack((gamelist,avgrank,trends.T)).T
     return out.view('f8,'*out.shape[1])#.sort( order=['f0'], axis=0)
 
