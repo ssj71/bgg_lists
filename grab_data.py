@@ -7,6 +7,7 @@ import copy
 import calendar
 import numpy as np
 import bgg_most_played as bgg
+import matplotlib.pyplot as matplot
 
 #takes a 3d matrix from bgg_most_played and
 #returns a 2d matrix with averaged rank, and summed play stats
@@ -53,8 +54,12 @@ def ranktrends(top):
                 trends = np.append(trends, np.ones([1,nperiods])*(ngames+1), axis=0)
                 trends[-1,-1] = rank
     out = np.vstack((gamelist,avgrank,trends.T)).T
-    return out.view('f8,'*out.shape[1])#.sort( order=['f0'], axis=0)
+    return out#out.view('f8,'*out.shape[1]).sort( order=['f0'], axis=0)
 
+def topNtrends(trends, n):
+    a = trends[np.any(trends < n, axis=1),:]
+    print(a.shape)
+    return trends[np.any(trends < n, axis=1), :]
 
 try:
    t12m = np.load( "t12m.npy" )
@@ -108,10 +113,17 @@ t1mflattened.view('f8,f8,f8,f8')[::-1].sort( order=['f3'], axis=0)
 #print(t1mflattened.shape)
 #print(t12m[:,:10,:], "\n\n" , t1mflattened[:10,:])
 
-#matplotlib.pyplot.scatter(miles,prices)
-#matplotlib.pyplot.ylabel('price')
-#matplotlib.pyplot.xlabel('mileage')
-#matplotlib.pyplot.show()
-
 trends  = ranktrends(t1m);
-print(trends[:10,:])
+#print(trends[:10,:])
+print(trends.shape)
+
+#matplot.plot( np.r_[:12], trends[0,2:])
+#matplot.plot( trends[:10,2:].T)
+matplot.plot( topNtrends(trends,10)[:,2:].T )
+matplot.ylabel('rank')
+matplot.xlabel('month')
+matplot.title("most played games")
+matplot.axis([0, 11, -.5, 25])
+matplot.gca().invert_yaxis()
+matplot.show()
+
