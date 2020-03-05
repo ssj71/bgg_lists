@@ -7,14 +7,16 @@ import copy
 
 page = urllib.request.urlopen("https://boardgamegeek.com/browse/boardgame")
 
-top2500 = []
-
-for p in range(1,26):
-    url = "https://boardgamegeek.com/browse/boardgame/page/"+str(p)
+def getNext100TRG(pagen):
+    url = "https://boardgamegeek.com/browse/boardgame/page/"+str(pagen)
     page = urllib.request.urlopen(url)
     data = page.read().decode('utf-8')
     top = [int(m.group()) for m in re.finditer('(?<=href="/boardgame/)(\d+)(?=/)',data)]
-    top2500.extend(top[0::3])
+    return top[0::3]
 
-top100 = top2500[0:100]
-top1000 = top2500[0:1000]
+# grabs number of pages provided (100 entries per page)
+def getTopRankedGames( pages = 1 ):
+    top = []
+    for p in range(1,1+pages):
+        top.extend(getNext100TRG(p))
+    return top

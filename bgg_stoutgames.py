@@ -8,10 +8,11 @@
 
 #this script takes around 20 minutes to complete so keep your calm
 
-from bgg_top_ranked import top2500
+import bgg_top_ranked as bggtr
 import untangle
 import time
 
+top2500 = bggtr.getTopRankedGames(25)
 stride = 10 #number of entries to query at once
 delay = 4 #time (sec) to wait between server queries
 start = 0 #this should always be 0, except if debugging
