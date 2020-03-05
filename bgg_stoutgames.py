@@ -8,7 +8,7 @@
 
 #this script takes around 20 minutes to complete so keep your calm
 
-from bgg_top100 import top2500
+from bgg_top_ranked import top2500
 import untangle
 import time
 
@@ -25,7 +25,6 @@ parse = True #this should always be True, except if debugging
 #
 # @return  untangle xml object
 def getGameXML(ids):
-    #TODO: switch to api2
     url = "https://www.boardgamegeek.com/xmlapi2/thing?id=" + ",".join(str (n) for n in ids) + "&stats=1"
     url = "https://www.boardgamegeek.com/xmlapi/boardgame/" + ",".join(str (n) for n in group) + "?stats=1"
     xml =  untangle.parse(url)
