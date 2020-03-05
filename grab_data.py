@@ -56,6 +56,7 @@ def ranktrends(top):
     out = np.vstack((gamelist,avgrank,trends.T)).T
     return out#out.view('f8,'*out.shape[1]).sort( order=['f0'], axis=0)
 
+#returns a pruned matrix with game trends that reached rank N or higher
 def topNtrends(trends, n):
     a = trends[np.any(trends < n, axis=1),:]
     print(a.shape)
@@ -75,56 +76,9 @@ def loadyear(year = 19, window = 1):
             data = np.append(data,np.array([a]),axis=0)
         np.save(title,data)
     return data
-
-if False:
-    try:
-       t12m = np.load( "t12m.npy" )
-    except IOError:
-        print("could't find 12m data")
-        a = bgg.getTopPlayedGames( startmonth = 1, timerangemonths = 12 , pages = 5 )
-        t12m = np.array([a])
-        np.save( "t12m", t12m )
-
-    try:
-       t6m = np.load( "t6m.npy" )
-    except IOError:
-        print("could't find 6m data")
-        a = bgg.getTopPlayedGames( startmonth = 1, timerangemonths = 6 , pages = 5 )
-        b = bgg.getTopPlayedGames( startmonth = 7, timerangemonths = 6 , pages = 5 )
-        t6m = np.array([a,b])
-        np.save( "t6m", t6m )
-
-    try:
-       t3m = np.load( "t3m.npy" )
-    except IOError:
-        print("could't find 3m data")
-        a = bgg.getTopPlayedGames( startmonth = 1, timerangemonths = 3 , pages = 5 )
-        b = bgg.getTopPlayedGames( startmonth = 4, timerangemonths = 3 , pages = 5 )
-        c = bgg.getTopPlayedGames( startmonth = 7, timerangemonths = 3 , pages = 5 )
-        d = bgg.getTopPlayedGames( startmonth = 10, timerangemonths = 3 , pages = 5 )
-        t3m = np.array([a,b,c,d])
-        np.save( "t3m", t3m )
-
-    try:
-       t1m = np.load( "t1m.npy" )
-    except IOError:
-        print("could't find 1m data")
-        a = bgg.getTopPlayedGames( startmonth = 1, timerangemonths = 1 , pages = 5 )
-        b = bgg.getTopPlayedGames( startmonth = 2, timerangemonths = 1 , pages = 5 )
-        c = bgg.getTopPlayedGames( startmonth = 3, timerangemonths = 1 , pages = 5 )
-        d = bgg.getTopPlayedGames( startmonth = 4, timerangemonths = 1 , pages = 5 )
-        e = bgg.getTopPlayedGames( startmonth = 5, timerangemonths = 1 , pages = 5 )
-        f = bgg.getTopPlayedGames( startmonth = 6, timerangemonths = 1 , pages = 5 )
-        g = bgg.getTopPlayedGames( startmonth = 7, timerangemonths = 1 , pages = 5 )
-        h = bgg.getTopPlayedGames( startmonth = 8, timerangemonths = 1 , pages = 5 )
-        i = bgg.getTopPlayedGames( startmonth = 9, timerangemonths = 1 , pages = 5 )
-        j = bgg.getTopPlayedGames( startmonth = 10, timerangemonths = 1 , pages = 5 )
-        k = bgg.getTopPlayedGames( startmonth = 11, timerangemonths = 1 , pages = 5 )
-        l = bgg.getTopPlayedGames( startmonth = 12, timerangemonths = 1 , pages = 5 )
-        t1m = np.array([a,b,c,d,e,f,g,h,i,j,k,l])
-        np.save( "t1m", t1m )
  
-t1m = loadyear(year = 19, window = 1);
+t1m = loadyear(11,1);
+t1m = np.append(t1m,loadyear(12,1),axis=0)
 
 print(t1m.shape)
 t1mflattened = flatten(t1m)
@@ -141,7 +95,7 @@ print(trends.shape)
 matplot.plot( topNtrends(trends,10)[:,2:].T )
 matplot.ylabel('rank')
 matplot.xlabel('month')
-matplot.title("most played games")
-matplot.axis([0, 11, -.5, 25])
+matplot.title("most played games ranked by number of unique users each month")
+matplot.axis([0, trends.shape[1]-3, -.5, 20])
 matplot.gca().invert_yaxis()
 matplot.show()
