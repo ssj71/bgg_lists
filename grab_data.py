@@ -62,6 +62,7 @@ def topNtrends(trends, n):
     print(a.shape)
     return trends[np.any(trends < n, axis=1), :]
 
+#grab a year of data with sliding window of configurable number of months
 def loadyear(year = 19, window = 1):
     title = "t"+str(window)+"m"+str(year)
     try:
@@ -70,8 +71,8 @@ def loadyear(year = 19, window = 1):
         print("could't find "+str(year)+" "+str(window)+ " data")
         a = bgg.getTopPlayedGames( startyear = 2000+year, startmonth = 1, timerangemonths = window , pages = 5 )
         data = np.array([a,])
-        for m in range(1+window,13,window):
-            print(m)
+        #for m in range(1+window,13,window): # non-overlapping windows
+        for m in range(1,13): #sliding window
             a = bgg.getTopPlayedGames( startyear = 2000+year, startmonth = m, timerangemonths = window , pages = 5 )
             data = np.append(data,np.array([a]),axis=0)
         np.save(title,data)
@@ -103,10 +104,10 @@ matplot.gca().invert_yaxis()
 
 
 t3m = loadyear(11,3);
-t3m = np.append(t1m,loadyear(12,3),axis=0)
+t3m = np.append(t3m,loadyear(12,3),axis=0)
 
 trends3  = ranktrends(t3m);
-print(trends3.shape)
+print("t3 ",t3m.shape, trends3.shape)
 matplot.figure(1)
 matplot.plot( topNtrends(trends3,10)[:,2:].T )
 matplot.ylabel('rank')
@@ -114,4 +115,19 @@ matplot.xlabel('month')
 matplot.title("most played games ranked by number of unique users each quarter")
 matplot.axis([0, trends3.shape[1]-3, -.5, 20])
 matplot.gca().invert_yaxis()
+
+t6m = loadyear(11,6);
+t6m = np.append(t6m,loadyear(12,6),axis=0)
+
+trends6  = ranktrends(t6m);
+print("t6 ", t6m.shape, trends6.shape)
+matplot.figure(2)
+matplot.plot( topNtrends(trends6,10)[:,2:].T )
+matplot.ylabel('rank')
+matplot.xlabel('month')
+matplot.title("most played games ranked by number of unique users semi-anually")
+matplot.axis([0, trends6.shape[1]-3, -.5, 20])
+matplot.gca().invert_yaxis()
+
+
 matplot.show()
