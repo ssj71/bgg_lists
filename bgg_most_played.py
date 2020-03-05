@@ -51,7 +51,8 @@ def getTopPlayedGames( startyear = 2019, startmonth = 1, timerangemonths = 12, p
     games = np.array([[],[],[],[]]).T #rank, game, plays, players
     for i in range(pages):
         (g, p, pr) = getNext100TPG(startyear, startmonth, timerangemonths, i+1)
-        print(len(g),len(p),len(pr))
+        if len(g) != len(p) or len(g) != len(pr):
+            print("error scraping page", i, "for", startmonth, startyear, len(g),len(p),len(pr))
         tmp = np.array([np.r_[:100]+i*100,g,p,pr])
         games = np.vstack((games,tmp.T))
     return games

@@ -63,18 +63,33 @@ def topNtrends(trends, n):
     return trends[np.any(trends < n, axis=1), :]
 
 #grab a year of data with sliding window of configurable number of months
+#windows reach backward in time (so Jan with three month is Nov+ Dec+ Jan)
 def loadyear(year = 19, window = 1):
     title = "t"+str(window)+"m"+str(year)
     try:
        data = np.load( title+".npy" )
     except IOError:
         print("could't find "+str(year)+" "+str(window)+ " data")
-        a = bgg.getTopPlayedGames( startyear = 2000+year, startmonth = 1, timerangemonths = window , pages = 5 )
+        if(window > 1):
+            year -= 1;
+            start = 14-window
+        else:
+            start = 1
+        a = bgg.getTopPlayedGames( startyear = 2000+year, startmonth = start, timerangemonths = window , pages = 5 )
         data = np.array([a,])
-        #for m in range(1+window,13,window): # non-overlapping windows
-        for m in range(1,13): #sliding window
+        print(start)
+        #get the rest starting in the previous year
+        for m in range(start+1,13): #sliding window
+            print(m)
             a = bgg.getTopPlayedGames( startyear = 2000+year, startmonth = m, timerangemonths = window , pages = 5 )
             data = np.append(data,np.array([a]),axis=0)
+        if(window > 1):
+            year += 1
+            #get the periods starting in the requested year
+            for m in range(1,14-window): #sliding window
+                print(m)
+                a = bgg.getTopPlayedGames( startyear = 2000+year, startmonth = m, timerangemonths = window , pages = 5 )
+                data = np.append(data,np.array([a]),axis=0)
         np.save(title,data)
     return data
  
