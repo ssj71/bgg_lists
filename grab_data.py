@@ -92,10 +92,26 @@ print(trends.shape)
 
 #matplot.plot( np.r_[:12], trends[0,2:])
 #matplot.plot( trends[:10,2:].T)
+matplot.figure(0)
 matplot.plot( topNtrends(trends,10)[:,2:].T )
 matplot.ylabel('rank')
 matplot.xlabel('month')
 matplot.title("most played games ranked by number of unique users each month")
 matplot.axis([0, trends.shape[1]-3, -.5, 20])
+matplot.gca().invert_yaxis()
+#matplot.show()
+
+
+t3m = loadyear(11,3);
+t3m = np.append(t1m,loadyear(12,3),axis=0)
+
+trends3  = ranktrends(t3m);
+print(trends3.shape)
+matplot.figure(1)
+matplot.plot( topNtrends(trends3,10)[:,2:].T )
+matplot.ylabel('rank')
+matplot.xlabel('month')
+matplot.title("most played games ranked by number of unique users each quarter")
+matplot.axis([0, trends3.shape[1]-3, -.5, 20])
 matplot.gca().invert_yaxis()
 matplot.show()
