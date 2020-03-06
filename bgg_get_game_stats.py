@@ -26,7 +26,7 @@ def getGameXML2(ids):
 ##
 # @brief  get stats from bgg xml
 #
-# @param xml untangle object from bgg with a collecton of boardgame entries
+# @param items untangle object from bgg with a collecton of boardgame entries
 #
 # @return numpy array with boardgame data
 def getGameStats(items):
@@ -52,6 +52,8 @@ def getGameStats(items):
 def getGameStatsHeader():
     return ("rank", "name", "id", "minlen", "maxlen", "weight", "owned")
 
+#some game ids for testing
+ids = [1.67791e+05,2.04583e+05,1.78900e+05,1.48228e+05,1.69786e+05,1.73346e+05, 6.84480e+04,2.30802e+05,2.09685e+05,1.63412e+05,8.22000e+02,1.74430e+05, 1.99561e+05,3.00000e+00,5.00000e+00,2.44992e+05,2.33867e+05,2.44521e+05, 2.36457e+05,2.54640e+05,2.66192e+05,2.86096e+05]
 
 exit()
 
