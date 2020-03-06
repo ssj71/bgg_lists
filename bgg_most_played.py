@@ -27,8 +27,10 @@ def getNext100TPG(starty, startm, rangem, pagen):
     stardate = start.strftime("%Y-%m-%d")
     endate = (add_months(start,rangem) - datetime.timedelta(1)).strftime("%Y-%m-%d")
 
-    page = urllib.request.urlopen("https://boardgamegeek.com/plays/bygame/subtype/boardgame/start/" + stardate + "/end/" + endate + "/page/" + str(pagen) + "?sortby=distinctusers")
+    url = "https://boardgamegeek.com/plays/bygame/subtype/boardgame/start/" + stardate + "/end/" + endate + "/page/" + str(pagen) + "?sortby=distinctusers"
+    page = urllib.request.urlopen(url)
 
+    #print(url)
     #print(page.read())
     data = page.read().decode('utf-8')
     p = 0
@@ -70,14 +72,16 @@ def loadyear(year = 19, window = 1):
             start = 14-window
         else:
             start = 1
-        a = getTopPlayedGames( startyear = 2000+year, startmonth = start, timerangemonths = window , pages = 5 )
-        data = np.array([a,])
-        print(start)
         #get the rest starting in the previous year
-        for m in range(start+1,13): #sliding window
+        first = True
+        for m in range(start,13): #sliding window
             print(m)
             a = getTopPlayedGames( startyear = 2000+year, startmonth = m, timerangemonths = window , pages = 5 )
-            data = np.append(data,np.array([a]),axis=0)
+            if first:
+                data = np.array([a,])
+                first = False
+            else:
+                data = np.append(data,np.array([a]),axis=0)
         if(window > 1):
             year += 1
             #get the periods starting in the requested year
@@ -85,8 +89,11 @@ def loadyear(year = 19, window = 1):
                 print(m)
                 a = getTopPlayedGames( startyear = 2000+year, startmonth = m, timerangemonths = window , pages = 5 )
                 data = np.append(data,np.array([a]),axis=0)
-        np.save(title,data)
+        #don't save if the year isn't over
+        if year != datetime.datetime.now().year-2000:
+            np.save(title,data)
     return data
+
 #the following functions help manipulate the data for analysis
 
 #takes a 3d matrix from load_year and
