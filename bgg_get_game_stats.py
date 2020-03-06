@@ -30,6 +30,7 @@ def getGameXML2(ids):
 #
 # @return numpy array with boardgame data
 def getGameStats(items):
+    first = True
     for game in items.items.item:
         name = [name['value'] for name in game.name if name['type']=='primary'][0]
         print(name)
@@ -50,14 +51,20 @@ def getGameStats(items):
         else:
             rank = int(rankcategories['value'])
         owned = game.statistics.ratings.owned['value']
-        print(rank,name,idnum,minlen,maxlen,weight,owned)
+        row = np.array([rank,name,idnum,minlen,maxlen,weight,owned])
+        if(first):
+           out = np.array([row,]) 
+        else:
+            out = np.vstack([out,row])
+        first = False
+    return out
     
 
 def getGameStatsHeader():
     return ("rank", "name", "id", "minlen", "maxlen", "weight", "owned")
 
 #some game ids for testing
-ids = [167791,204583,178900,1.48228e+05,1.69786e+05,1.73346e+05, 6.84480e+04,2.30802e+05,2.09685e+05,1.63412e+05,8.22000e+02,1.74430e+05, 1.99561e+05,3.00000e+00,5.00000e+00,2.44992e+05,2.33867e+05,2.44521e+05, 2.36457e+05,2.54640e+05,2.66192e+05,2.86096e+05]
+#ids = [167791,204583,178900,1.48228e+05,1.69786e+05,1.73346e+05, 6.84480e+04,2.30802e+05,2.09685e+05,1.63412e+05,8.22000e+02,1.74430e+05, 1.99561e+05,3.00000e+00,5.00000e+00,2.44992e+05,2.33867e+05,2.44521e+05, 2.36457e+05,2.54640e+05,2.66192e+05,2.86096e+05]
 
 xml = getGameXML2(ids)
-getGameStats(xml)
+print(getGameStats(xml))
