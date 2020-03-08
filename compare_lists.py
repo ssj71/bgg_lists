@@ -15,7 +15,7 @@ month = 12 #month (1-12) to consider
 t6m = bggmp.loadyear(19,monthwindow) #top played
 
 #plan b iterate over top100 to see where they rank in most played
-top = bggtr.getTopRankedGames(5)
+top = bggtr.getTopRankedGames(1)
 first = True
 for rank,gameid in enumerate(top):
     i = np.where( t6m[month-1,:,bggmp.gameid_col] == gameid )[0]

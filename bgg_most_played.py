@@ -14,6 +14,8 @@ gameid_col = 1
 plays_col = 2
 uniqueplays_col = 3
 
+defaultPages = 5 #number of pages to scrape (100 games per)
+
 def add_months(sourcedate, months):
     month = sourcedate.month - 1 + months
     year = sourcedate.year + month // 12
@@ -59,6 +61,16 @@ def getTopPlayedGames( startyear = 2019, startmonth = 1, timerangemonths = 12, p
         games = np.vstack((games,tmp.T))
     return games
 
+
+def getTopPlayedGamesTill( year = 2019, month = 12, window = 1, pages = 1 ):
+    if(window > month):
+        year -= 1;
+        month = 14 - window + month
+    else:
+        start = month - window + 1
+    a = getTopPlayedGames( startyear = year, startmonth = start, timerangemonths = window , pages = pages )
+    return a
+
 #grab a year of data with sliding window of configurable number of months
 #windows reach backward in time (so Jan with three month is Nov+ Dec+ Jan)
 def loadyear(year = 19, window = 1):
@@ -67,27 +79,14 @@ def loadyear(year = 19, window = 1):
        data = np.load( title+".npy" )
     except IOError:
         print("could't find "+str(year)+" "+str(window)+ " data")
-        if(window > 1):
-            year -= 1;
-            start = 14-window
-        else:
-            start = 1
-        #get the rest starting in the previous year
         first = True
-        for m in range(start,13): #sliding window
+        for m in range(1,13): #sliding window
             print(m)
-            a = getTopPlayedGames( startyear = 2000+year, startmonth = m, timerangemonths = window , pages = 5 )
+            a = getTopPlayedGamesTill( year = 2000+year, month = m, timerangemonths = window , pages = defaultPages )
             if first:
                 data = np.array([a,])
                 first = False
             else:
-                data = np.append(data,np.array([a]),axis=0)
-        if(window > 1):
-            year += 1
-            #get the periods starting in the requested year
-            for m in range(1,14-window): #sliding window
-                print(m)
-                a = getTopPlayedGames( startyear = 2000+year, startmonth = m, timerangemonths = window , pages = 5 )
                 data = np.append(data,np.array([a]),axis=0)
         #don't save if the year isn't over
         if year != datetime.datetime.now().year-2000:
