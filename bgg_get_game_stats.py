@@ -6,11 +6,14 @@ import untangle
 import time
 import numpy as np
 
-stride = 10 #number of entries to query at once
-delay = 4 #time (sec) to wait between server queries
-start = 0 #this should always be 0, except if debugging
-parse = True #this should always be True, except if debugging
 
+rank_col   = 0
+name_col   = 1
+gameid_col = 2
+minlen_col = 3
+maxlen_col = 4
+weight_col = 5
+owned_col  = 6
 
 ##
 # @brief  get xml from bgg
@@ -33,7 +36,6 @@ def getGameStats(items):
     first = True
     for game in items.items.item:
         name = [name['value'] for name in game.name if name['type']=='primary'][0]
-        print(name)
         idnum = int(game['id'])
         minlen = int(game.minplaytime['value'])
         maxlen = int(game.maxplaytime['value'])
