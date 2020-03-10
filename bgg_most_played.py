@@ -25,7 +25,6 @@ def add_months(sourcedate, months):
 
 
 def getNext100TPG(starty, startm, rangem, pagen):
-    print(startm)
     start = datetime.date(starty,startm,1)
     stardate = start.strftime("%Y-%m-%d")
     endate = (add_months(start,rangem) - datetime.timedelta(1)).strftime("%Y-%m-%d")

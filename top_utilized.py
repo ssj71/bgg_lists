@@ -11,19 +11,19 @@ month = datetime.datetime.now().month
 year = datetime.datetime.now().year-2000
 monthwindow = 6 #window size in months
 
-top = bggtr.getTopRankedGames(1)
+top = bggtr.getTopRankedGames(5)
 mostplayed = bggmp.getTopPlayedGamesTill(year = year, month = month, window = monthwindow, pages = 10) #top played
 
 
 first = True
+stats = bggstats.getStatsSlowly(top)
 for rank,gameid in enumerate(top):
     i = np.where( mostplayed[:,bggmp.gameid_col] == gameid )[0]
     if i.size:
         #it was found
         uniqueplays = mostplayed[i,bggmp.uniqueplays_col]
-        stats = bggstats.getGameStats(bggstats.getGameXML2((gameid,)))[0]
-        owned = int(stats[bggstats.owned_col])
-        print(rank, stats[bggstats.name_col], uniqueplays/owned)
+        owned = int(stats[rank,bggstats.owned_col])
+        print(rank, stats[rank,bggstats.name_col], mostplayed[i,bggmp.rank_col], uniqueplays/owned)
         if first:
             #results = np.array([[stats]])
             first = False
@@ -32,7 +32,7 @@ for rank,gameid in enumerate(top):
             pass
     else:
         #not found
-        print("couldn't find #", rank+1, gameid, "in most played");
+        print("couldn't find #", rank+1, stats[rank,bggstats.name_col], gameid, "in most played");
 
 
 

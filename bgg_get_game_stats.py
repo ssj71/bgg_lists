@@ -7,6 +7,10 @@ import time
 import numpy as np
 
 
+stride = 50 #number of entries to query at once
+delay = 4 #time (sec) to wait between server queries
+
+
 rank_col   = 0
 name_col   = 1
 gameid_col = 2
@@ -64,6 +68,23 @@ def getGameStats(items):
 
 def getGameStatsHeader():
     return ("rank", "name", "id", "minlen", "maxlen", "weight", "owned")
+
+def getStatsSlowly(ids):
+    first = True
+    print("getting stats",end=" ")
+    for i in range(0,len(ids),stride):
+        block = ids[i:i+stride]
+        stats = getGameStats(getGameXML2(block))
+        if first:
+            out = stats
+            first = False
+        else:
+            out = np.vstack((out,stats))
+        print(len(block),end=" ")
+        time.sleep(delay)
+    print("done")
+    return out
+
 
 #some game ids for testing
 #ids = [167791,204583,178900,1.48228e+05,1.69786e+05,1.73346e+05, 6.84480e+04,2.30802e+05,2.09685e+05,1.63412e+05,8.22000e+02,1.74430e+05, 1.99561e+05,3.00000e+00,5.00000e+00,2.44992e+05,2.33867e+05,2.44521e+05, 2.36457e+05,2.54640e+05,2.66192e+05,2.86096e+05]
