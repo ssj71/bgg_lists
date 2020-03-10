@@ -14,7 +14,7 @@ gameid_col = 1
 plays_col = 2
 uniqueplays_col = 3
 
-defaultPages = 5 #number of pages to scrape (100 games per)
+defaultPages = 10 #number of pages to scrape (100 games per)
 
 def add_months(sourcedate, months):
     month = sourcedate.month - 1 + months
