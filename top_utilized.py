@@ -5,13 +5,14 @@ import bgg_most_played as bggmp
 import bgg_top_ranked as bggtr
 import numpy as np
 import matplotlib.pyplot as matplot
+import datetime
 
-month = 12 #month (1-12) to consider
+month = datetime.datetime.now().month
+year = datetime.datetime.now().year-2000
 monthwindow = 6 #window size in months
 
-t6m = bggmp.loadyear(19,monthwindow) #top played
 top = bggtr.getTopRankedGames(1)
-mostplayed = t6m[month-1,:,:]
+mostplayed = bggmp.getTopPlayedGamesTill(year = year, month = month, window = monthwindow, pages = 10) #top played
 
 
 first = True

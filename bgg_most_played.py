@@ -25,6 +25,7 @@ def add_months(sourcedate, months):
 
 
 def getNext100TPG(starty, startm, rangem, pagen):
+    print(startm)
     start = datetime.date(starty,startm,1)
     stardate = start.strftime("%Y-%m-%d")
     endate = (add_months(start,rangem) - datetime.timedelta(1)).strftime("%Y-%m-%d")
@@ -67,8 +68,8 @@ def getTopPlayedGamesTill( year = 2019, month = 12, window = 1, pages = 1 ):
         year -= 1;
         month = 14 - window + month
     else:
-        start = month - window + 1
-    a = getTopPlayedGames( startyear = year, startmonth = start, timerangemonths = window , pages = pages )
+        month = month - window + 1
+    a = getTopPlayedGames( startyear = year, startmonth = month, timerangemonths = window , pages = pages )
     return a
 
 #grab a year of data with sliding window of configurable number of months
@@ -82,7 +83,7 @@ def loadyear(year = 19, window = 1):
         first = True
         for m in range(1,13): #sliding window
             print(m)
-            a = getTopPlayedGamesTill( year = 2000+year, month = m, timerangemonths = window , pages = defaultPages )
+            a = getTopPlayedGamesTill( year = 2000+year, month = m, window = window , pages = defaultPages )
             if first:
                 data = np.array([a,])
                 first = False
