@@ -18,6 +18,7 @@ minlen_col = 3
 maxlen_col = 4
 weight_col = 5
 owned_col  = 6
+year_col   = 7
 
 ##
 # @brief  get xml from bgg
@@ -57,7 +58,8 @@ def getGameStats(items):
         else:
             rank = int(rankcategories['value'])
         owned = game.statistics.ratings.owned['value']
-        row = np.array([rank,name,idnum,minlen,maxlen,weight,owned])
+        year = int(game.yearpublished['value'])
+        row = np.array([rank,name,idnum,minlen,maxlen,weight,owned,year])
         if(first):
            out = np.array([row,]) 
         else:
@@ -67,7 +69,7 @@ def getGameStats(items):
     
 
 def getGameStatsHeader():
-    return ("rank", "name", "id", "minlen", "maxlen", "weight", "owned")
+    return ("rank", "name", "id", "minlen", "maxlen", "weight", "owned", "year")
 
 def getStatsSlowly(ids):
     first = True
