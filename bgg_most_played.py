@@ -65,7 +65,7 @@ def getTopPlayedGames( startyear = 2019, startmonth = 1, timerangemonths = 12, p
 def getTopPlayedGamesTill( year = 2019, month = 12, window = 1, pages = 1 ):
     if(window > month):
         year -= 1;
-        month = 14 - window + month
+        month = 13 - window + month
     else:
         month = month - window + 1
     a = getTopPlayedGames( startyear = year, startmonth = month, timerangemonths = window , pages = pages )
