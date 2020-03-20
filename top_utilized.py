@@ -8,11 +8,19 @@ import matplotlib.pyplot as matplot
 import datetime
 import time
 
+monthwindow = 12 #window size in months
+
 month = datetime.datetime.now().month-1
 if month == 0:
     month = 12
 year = datetime.datetime.now().year-2000
-monthwindow = 6 #window size in months
+cutoffyear = year+1998
+
+
+def printYearHist(data):
+    yrs,cnts = np.unique(np.int_(data),return_counts=True)
+    for i,y in enumerate(yrs):
+        print(y,":",cnts[i])
 
 start = time.time()
 print("start",start)
@@ -33,15 +41,16 @@ for rank,gameid in enumerate(top):
         owned = int(stats[rank,bggstats.owned_col])
         idnum = int(stats[rank,bggstats.gameid_col])
         year = int(stats[rank,bggstats.year_col])
-        #print(rank, stats[rank,bggstats.name_col], mostplayed[i,bggmp.rank_col], uniqueplays/owned)
-        row = np.array([rank, idnum,  mostplayed[i,bggmp.rank_col], uniqueplays,owned, uniqueplays/owned, totalplays, year])
-        if first:
-            results = np.array([row])
-            names = [stats[rank,bggstats.name_col],] 
-            first = False
-        else:
-            results = np.vstack((results, row))
-            names.append(stats[rank,bggstats.name_col]) 
+        if(year < cutoffyear):
+            #print(rank, stats[rank,bggstats.name_col], mostplayed[i,bggmp.rank_col], uniqueplays/owned)
+            row = np.array([rank, idnum,  mostplayed[i,bggmp.rank_col], uniqueplays,owned, uniqueplays/owned, totalplays, year])
+            if first:
+                results = np.array([row])
+                names = [stats[rank,bggstats.name_col],]
+                first = False
+            else:
+                results = np.vstack((results, row))
+                names.append(stats[rank,bggstats.name_col])
     else:
         #not found
         #print("couldn't find #", rank+1, stats[rank,bggstats.name_col], gameid, "in most played");
@@ -50,8 +59,16 @@ for rank,gameid in enumerate(top):
 #save results?
 #load last month results
 print("sorting",time.time()-start)
-print("")
 results.view('f8,'*8)[::-1].sort( order=['f5'], axis=0)
+
+print("\n\nYear Histogram (all)")
+printYearHist(results[:,7])
+print("\nYear Histogram (top 100)")
+printYearHist(results[:100,7])
+print("\nYear Histogram (top 50)")
+printYearHist(results[:50,7])
+print("")
+
 for i,row in enumerate(results[:,:]):
     print(i+1, int(row[0]), stats[int(row[0]),bggstats.name_col], int(row[1]),"\n")
     print("\n\tPublished:",int(row[7]))
@@ -59,7 +76,6 @@ for i,row in enumerate(results[:,:]):
     print("\tOwned:",int(row[4]))
     print("\tTable/Shelf Ratio: %.3f%%"%(row[5]*100))
     print("\n\tAverage times played per player: %.1fx\n\n"%(row[6]/row[3]))
-
 
 print("script complete",time.time()-start)
 
