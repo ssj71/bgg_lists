@@ -40,7 +40,7 @@ def plotNYearTrend(gameid, startyear = 19, N = 2, window = 1):
     trends  = bggmp.ranktrends(tm);
     i = np.where(trends[:,0] == gameid)[0];
     if(i.size):
-        matplot.plot( trends[i,2:].T )
+        matplot.plot( trends[i,2:].T+1 )
         matplot.ylabel('rank')
         matplot.xlabel('month')
     else:
@@ -48,19 +48,38 @@ def plotNYearTrend(gameid, startyear = 19, N = 2, window = 1):
 
 #compareWindows(18)
 #plot2YearTrends(18,1,50)
+games = np.array( [
+    [265736,"Tiny Towns"],
+    [197376,"Charterstone"],
+    [174430, "Gloomhaven"],
+    [148228, "Splendor"],
+    [68448,  "7 Wonders"],
+    [180263, "7th Continent"],
+    [150376, "Dead of Winter"],
+    [147020, "Star Realms"],
+    [172, "For Sale"],
+    [13, "Catan"],
+    [28143, "Race FT Galaxy"],
+    [285774, "Marvel Champs"],
+    [478, "Citadels"],
+    [16992, "Tsuro"],
+    ])
+strt = 10
+yrs = 10
+for row in games:
+    plotNYearTrend(int(row[0]),strt,yrs)
+matplot.legend(games[:,1])
+#matplot.axis(matplot.axis()[:2]+(-.5, 270))
+matplot.gca().set_yscale("log")
+matplot.gca().invert_yaxis()
 
-strt = 16
-yrs = 5
-plotNYearTrend(265736,strt,yrs) #tiny towns
-plotNYearTrend(197376,strt,yrs) #charterstone
-plotNYearTrend(174430,strt,yrs) #Gloomhaven
-plotNYearTrend(148228,strt,yrs) #Splendor
-plotNYearTrend(68448,strt,yrs) #7 Wonders
-plotNYearTrend(180263,strt,yrs) #7th Cont
-plotNYearTrend(150376,strt,yrs) #Dead of Winter
-plotNYearTrend(147020,strt,yrs) #Star Realms
-matplot.legend(["Tiny Towns","Charterstone","Gloomhaven","Splendor","7 Wonders","7th Continent","Dead of Winter","Star Realms"])
-matplot.axis(matplot.axis()[:2]+(-.5, 220))
+#do again with a 12 month window
+matplot.figure()
+for row in games:
+    plotNYearTrend(int(row[0]),strt,yrs,12)
+matplot.legend(games[:,1])
+#matplot.axis(matplot.axis()[:2]+(-.5, 270))
+matplot.gca().set_yscale("log")
 matplot.gca().invert_yaxis()
 
 matplot.show()
