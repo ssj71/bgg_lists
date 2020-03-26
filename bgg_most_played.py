@@ -79,8 +79,13 @@ def loadyear(year = 19, window = 1):
        data = np.load( title+".npy" )
     except IOError:
         print("could't find "+str(year)+" "+str(window)+ " data")
+        notthisyear = year != datetime.datetime.now().year-2000
+        if notthisyear:
+            thismonth = 13
+        else:
+            thismonth = datetime.datetime.now().month
         first = True
-        for m in range(1,13): #sliding window
+        for m in range(1,thismonth): #sliding window
             print(m)
             a = getTopPlayedGamesTill( year = 2000+year, month = m, window = window , pages = defaultPages )
             if first:
@@ -89,8 +94,8 @@ def loadyear(year = 19, window = 1):
             else:
                 data = np.append(data,np.array([a]),axis=0)
         #don't save if the year isn't over
-        if year != datetime.datetime.now().year-2000:
-            np.save(title,data)
+        #if notthisyear:
+        np.save(title,data)
     return data
 
 #the following functions help manipulate the data for analysis
