@@ -33,6 +33,11 @@ for game in stats:
     weight = float(game[bggstats.weight_col])
     rating = float(game[bggstats.rating_col])
     category = weight2categoryindex(weight)
+    if first:
+        results = np.array([[weight,rating]])
+        first = False
+    else:
+        results = np.vstack((results, np.array([weight,rating])))
     if topN[category,0][2] != 0:
         #already found 10 in the category
         continue
@@ -47,16 +52,26 @@ for mat in topN:
     i = ntop
     print(categories[cat],"\n") 
     for game in mat:
-        print(game[bggstats.gameid_col], game[bggstats.name_col], "\n")
+        print(game[bggstats.gameid_col], game[bggstats.name_col])
         print("#", i, " in ", categories[cat], sep="")
         print("weight:", game[bggstats.weight_col])
         print("\n")
         i -= 1
     cat += 1
 
+print("\nSummary:")
+#this summary is harder to read than the ranks
+#cat = 0
+#for mat in topN:
+#    print( categories[cat], "Ratings: ", mat[0][bggstats.rating_col], "-", mat[ntop-1][bggstats.rating_col])
+#    cat += 1
+#print("")
+cat = 0
+for mat in topN:
+    print( categories[cat].ljust(30,'.'), "Ranks: ", mat[ntop-1][bggstats.rank_col], "-", mat[0][bggstats.rank_col], sep="")
+    cat += 1
+print("\n")
 
 
-    
-
-#matplot.scatter(results[:,0],results[:,1])
-#matplot.show()
+matplot.scatter(results[:,0],results[:,1])
+matplot.show()
