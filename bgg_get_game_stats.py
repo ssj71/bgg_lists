@@ -89,9 +89,9 @@ def getStatsSlowly(ids):
             first = False
         else:
             out = np.vstack((out,stats))
-        print(len(block),end=" ")
+        print(len(block),end=" ", flush=True)
         time.sleep(delay)
-    print("done")
+    print("done", flush=True)
     return out
 
 
