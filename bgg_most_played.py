@@ -43,7 +43,7 @@ def getNext100TPG(starty, startm, rangem, pagen):
     #print(rawtable)
 
     items = [int(m.group()) for m in re.finditer('((?<=href="/boardgame/)|(?<=href="/boardgameexpansion/))\d+(?=/)',rawtable)]
-    #TODO: I can't quite get this regex to pick up all the special characters in the titles, I can use the xml api at some point do get the title
+    #TODO: I can't quite get this regex to pick up all the special characters in the titles. For now use the xml api (bgg_get_game_stats.py) to get the title.
     #titles = [m.group() for m in re.finditer('(?<="   >)([\u00BF-\u1FFF\u2C00-\uD7FF\w:\-\s]+)(?=</a>)',data)]
     plays = [int(m.group()) for m in re.finditer('(?<=<td>\n)(\s+\d+\s+)(?=</td>)',rawtable)]
     players = [int(m.group()) for m in re.finditer('(?<=">)(\d+\s+)(?=</td>)',rawtable)]
@@ -57,7 +57,8 @@ def getTopPlayedGames( startyear = 2019, startmonth = 1, timerangemonths = 12, p
         (g, p, pr) = getNext100TPG(startyear, startmonth, timerangemonths, i+1)
         if len(g) != len(p) or len(g) != len(pr):
             print("error scraping page", i, "for", startmonth, startyear, len(g),len(p),len(pr))
-        tmp = np.array([np.r_[:100]+i*100,g,p,pr])
+        #TODO: these aren't coming out as ints for some reason
+        tmp = np.array([np.r_[:100]+i*100, g, p, pr])
         games = np.vstack((games,tmp.T))
     return games
 

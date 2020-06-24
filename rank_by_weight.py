@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #spencer jackson
 
-#look at how the top played games is correlated (or not) with the top ranked games
+#look at the top 10 ranked games in different weight "classes"
 
 import bgg_get_game_stats as bggstats
 import bgg_top_ranked as bggtr

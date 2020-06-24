@@ -58,9 +58,13 @@ def getGameStats(items):
         rank = [int(rank['value']) for rank in game.statistics.ratings.ranks.rank if rank['id']=='1'][0]
         rating = float(game.statistics.ratings.average['value'])
         if len(rankcategories) > 1:
-            rank = int(rankcategories[0]['value'])
+            rank = rankcategories[0]['value']
         else:
-            rank = int(rankcategories['value'])
+            rank = rankcategories['value']
+        if rank == 'Not Ranked':
+            rank = 1000000000 #one million
+        else:
+            rank = int(rank)
         owned = game.statistics.ratings.owned['value']
         year = int(game.yearpublished['value'])
         row = np.array([rank,name,idnum,minlen,maxlen,weight,owned,year,rating])
@@ -89,7 +93,7 @@ def getStatsSlowly(ids):
             first = False
         else:
             out = np.vstack((out,stats))
-        print(len(block),end=" ", flush=True)
+        print(stats.shape[0],end=" ", flush=True)
         time.sleep(delay)
     print("done", flush=True)
     return out
