@@ -20,8 +20,10 @@ weight_col = 5
 owned_col  = 6
 year_col   = 7
 rating_col = 8
+geekrating_col = 9
+voters_col = 10
 
-num_col = 9
+num_col = 11
 
 ##
 # @brief  get xml from bgg
@@ -47,16 +49,19 @@ def getGameStats(items):
         idnum = int(game['id'])
         minlen = int(game.minplaytime['value'])
         maxlen = int(game.maxplaytime['value'])
+        #TODO: add argument to ignore unpub proto
         if maxlen <= 0:
             if minlen<=0:
+                print(".",end="")
                 continue #unpublished prototype shows up here
             maxlen = minlen
         if minlen <= 0:
             minlen = maxlen
         weight = float(game.statistics.ratings.averageweight['value'])
         rankcategories = game.statistics.ratings.ranks.rank
-        rank = [int(rank['value']) for rank in game.statistics.ratings.ranks.rank if rank['id']=='1'][0]
         rating = float(game.statistics.ratings.average['value'])
+        numratings = int(game.statistics.ratings.usersrated['value'])
+        bayes = float(game.statistics.ratings.bayesaverage['value'])
         if len(rankcategories) > 1:
             rank = rankcategories[0]['value']
         else:
@@ -67,7 +72,7 @@ def getGameStats(items):
             rank = int(rank)
         owned = game.statistics.ratings.owned['value']
         year = int(game.yearpublished['value'])
-        row = np.array([rank,name,idnum,minlen,maxlen,weight,owned,year,rating])
+        row = np.array([rank,name,idnum,minlen,maxlen,weight,owned,year,rating, bayes, numratings])
         if(first):
            out = np.array([row,]) 
         else:
@@ -76,11 +81,11 @@ def getGameStats(items):
     return out
     
 def getGameStatsRowType():
-    return 'i4, object, i4, i4, i4, f4, i4, i4, f4'
+    return 'i4, object, i4, i4, i4, f4, i4, i4, f4, f4, i4'
 
 
 def getGameStatsHeader():
-    return ("rank", "name", "id", "minlen", "maxlen", "weight", "owned", "year", "rating")
+    return ("rank", "name", "id", "minlen", "maxlen", "weight", "owned", "year", "rating", "geekrating", "numvoters")
 
 def getStatsSlowly(ids):
     first = True
