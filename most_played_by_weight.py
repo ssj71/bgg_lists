@@ -12,11 +12,12 @@ ntop = 10
 
 monthwindow = 12
 year = 20
-month = 5
+month = 4
 unpub = 18291
 top = bggmp.getTopPlayedGamesTill( year, month, monthwindow, 10) #top played
 top = top[top[:,bggmp.gameid_col]!=unpub,:] #exclude unpublished prototype
-stats = bggstats.getStatsSlowly(top[:,bggmp.gameid_col])
+idlist = top[:,bggmp.gameid_col]
+stats = bggstats.getStatsSlowly(idlist)
 
 #top and stats should be aligned so the id cols match
 print(top.shape, stats.shape)
@@ -93,5 +94,13 @@ for mat in topN:
 print("\n")
 
 
+#matplot.scatter( stats[:,bggstats.weight_col].astype(np.float), top[:,bggmp.uniqueplays_col])#top[:,bggmp.rank_col])
 matplot.scatter( stats[:,bggstats.weight_col].astype(np.float), top[:,bggmp.rank_col])
+matplot.ylabel('Rank (by Unique Users)')
+matplot.xlabel('Weight')
+matplot.figure()
+matplot.hist(stats[:,bggstats.weight_col].astype(np.float), np.array([1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]))
+matplot.ylabel('Number of Games in 10K Most Played')
+matplot.xlabel('Weight')
+
 matplot.show()
