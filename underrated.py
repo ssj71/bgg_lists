@@ -9,28 +9,26 @@ import numpy as np
 import matplotlib.pyplot as matplot
 import regression as reg
 
-top = bggtr.getTopRankedGames(100)
+top = bggtr.getTopRankedGames(5)
 stats = bggstats.getStatsSlowly(top)
 
-#TODO: this method highlights low avg rating games, need to factor in actual rating, not just difference
-disparity = stats[:,bggstats.rating_col].astype(np.float)-stats[:,bggstats.geekrating_col].astype(np.float)
+
+exit()
+# this method undoes the shill filter
+ratetio = stats[:,bggstats.rating_col].astype(np.float)/stats[:,bggstats.geekrating_col].astype(np.float) # get it? xD
 nvotes = stats[:,bggstats.voters_col].astype(np.int)
 l = stats.shape[0]
 
-#make a linear regression of the disparity per rank
-x = 1+np.r_[:l] #x is the ranks
-coeff = reg.reg(x,disparity,1)
-y = reg.applyPoly(x,coeff)
+tot  = np.array([ np.r_[:l] , ratetio.T]).T
+slist = tot[tot[:,1].argsort()[::-1]]
 
-#tot = np.hstack((stats, np.array([disparity]).T-y))
-tot = np.hstack(( np.array([x]]).T, np.array([disparity]).T-y))
-slist = np.sort(tot.view('f8,f8'), order=['f1'], axis=0)[::-1]
-
-for i in slist[:25,0]:
+for inx in slist[:50,0]:
+    i = int(inx)
     print(stats[i, bggstats.gameid_col], stats[i, bggstats.name_col])
-    print("avg rating:", stats[i, bggstats.rating_col], "\ngeek rating:", stats[i, bggstats.geekrating_col])
-    print(stats[i, bggstats.voters_col],"\n" stats[i, bggstats.year_col])
+    print("avg rating:", stats[i, bggstats.rating_col], "\ngeek rating:", stats[i, bggstats.geekrating_col], "\nratio:",  float(stats[i, bggstats.rating_col])/float(stats[i, bggstats.geekrating_col]) )
+    print("voters:", stats[i, bggstats.voters_col], "\nyear published:", stats[i, bggstats.year_col], "\n")
 
+exit()
 matplot.scatter(x, disparity)
 matplot.plot(x, y, 'k')
 
