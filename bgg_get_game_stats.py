@@ -22,8 +22,10 @@ year_col   = 7
 rating_col = 8
 geekrating_col = 9
 voters_col = 10
+minplayer_col = 11
+maxplayer_col = 12
 
-num_col = 11
+num_col = 13
 
 ##
 # @brief  get xml from bgg
@@ -72,7 +74,9 @@ def getGameStats(items):
             rank = int(rank)
         owned = game.statistics.ratings.owned['value']
         year = int(game.yearpublished['value'])
-        row = np.array([rank,name,idnum,minlen,maxlen,weight,owned,year,rating, bayes, numratings])
+        minplayer = int(game.minplayers['value'])
+        maxplayer = int(game.maxplayers['value'])
+        row = np.array([rank,name,idnum,minlen,maxlen,weight,owned,year,rating, bayes, numratings,minplayer,maxplayer])
         if(first):
            out = np.array([row,]) 
         else:
@@ -81,11 +85,11 @@ def getGameStats(items):
     return out
     
 def getGameStatsRowType():
-    return 'i4, object, i4, i4, i4, f4, i4, i4, f4, f4, i4'
+    return 'i4, object, i4, i4, i4, f4, i4, i4, f4, f4, i4, i4, i4'
 
 
 def getGameStatsHeader():
-    return ("rank", "name", "id", "minlen", "maxlen", "weight", "owned", "year", "rating", "geekrating", "numvoters")
+    return ("rank", "name", "id", "minlen", "maxlen", "weight", "owned", "year", "rating", "geekrating", "numvoters", "minplayers", "maxplayers")
 
 def getStatsSlowly(ids):
     first = True
