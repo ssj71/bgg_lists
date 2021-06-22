@@ -6,17 +6,26 @@ import datetime
 import numpy as np
 import csv
 import bgg_get_game_stats as bggstats
+import pandas as pd
 
 latest = datetime.date(2021, 6, 18)
 oldest = datetime.date(2016, 10, 12)
+#columns of csv
+c_id = 0
+c_nm = 1
+c_yr = 2
+c_rk = 3
+c_av = 4
+c_gr = 5
+c_nv = 6
 
 #start with the latest values (we expect it to have the complete list of games)
 d = latest
 fn = d.strftime("%Y-%m-%d.csv")
-m = np.genfromtxt("bgg-ranking-historicals/"+fn, delimiter=',', skip_header=1, usecols=(0,2,3,4,5,6), comments='therearenocomments')
+m = pd.read_csv("bgg-ranking-historicals/"+fn).to_numpy()
 l = m.shape[0]
 #peaks is gameid, gr peak, date, rank, gr min, date, rank,  rating drop (percent), rank drop (percent)
-peaks = np.array([m[:,0].T, m[:,4].T, np.ones(l)*d.toordinal(), m[:,2], m[:,4].T, np.ones(l)*d.toordinal(), m[:,2], np.zeros(l), np.zeros(l)]).T
+peaks = np.array([m[:,c_id].T, m[:,c_gr].T, np.ones(l)*d.toordinal(), m[:,c_rk], m[:,c_gr].T, np.ones(l)*d.toordinal(), m[:,c_rk], np.zeros(l), np.zeros(l)]).T
 #sort by game id
 #peaks.sort(axis=0)
 peaks = peaks[peaks[:,0].argsort(),:]
@@ -27,23 +36,23 @@ for n in range(tot):
     fn = d.strftime("%Y-%m-%d.csv")
     #we skip the string name so the cols of m are:
     #game id, year, rank, avg, geek rating, no. ratings
-    m = np.genfromtxt("bgg-ranking-historicals/"+fn, delimiter=',', skip_header=1, usecols=(0,2,3,4,5,6), comments='therearenocomments')
-    idx = np.searchsorted(peaks[:,0],m[:,0])
+    m = pd.read_csv("bgg-ranking-historicals/"+fn).to_numpy()
+    idx = np.searchsorted(peaks[:,0],m[:,c_id])
 
     #find those that were higher before
-    fallers = m[:,4] > peaks[idx,1]
+    fallers = m[:,c_gr] > peaks[idx,1]
     ndx = idx[fallers]
-    peaks[ndx,1] = m[fallers,4] #geek rating
+    peaks[ndx,1] = m[fallers,c_gr] #geek rating
     peaks[ndx,2] = d.toordinal() #date
-    peaks[ndx,3] = m[fallers,2] #rank
+    peaks[ndx,3] = m[fallers,c_rk] #rank
 
     #find those that were lower before
     #because we can't make sure this isn't before the peak, we just use the most recent as lowest
-    #risers = m[:,4] < peaks[idx,1]
+    #risers = m[:,c_gr] < peaks[idx,1]
     #ndx = idx[risers]
-    #peaks[ndx,4] = m[risers,4] #geek rating
+    #peaks[ndx,4] = m[risers,c_gr] #geek rating
     #peaks[ndx,5] = d.toordinal() #date
-    #peaks[ndx,6] = m[risers,2] #rank
+    #peaks[ndx,6] = m[risers,c_rk] #rank
 
 print()
 #calculate percent change in geek rating
