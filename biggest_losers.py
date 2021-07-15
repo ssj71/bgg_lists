@@ -8,7 +8,7 @@ import csv
 import bgg_get_game_stats as bggstats
 import pandas as pd
 
-latest = datetime.date(2021, 6, 22)
+latest = datetime.date(2021, 7, 10)
 oldest = datetime.date(2016, 10, 12)
 
 #columns of csv
