@@ -8,8 +8,9 @@ import csv
 import bgg_get_game_stats as bggstats
 import pandas as pd
 
-latest = datetime.date(2021, 7, 10)
-oldest = datetime.date(2016, 10, 12)
+latest = datetime.date(2022, 2, 10)
+oldest = datetime.date(2017, 2, 10)
+top = 55 #n to print
 
 #columns of csv
 c_id = 0  #id
@@ -81,19 +82,20 @@ for n in range(tot):
     #peaks[ndx,6] = m[risers,c_rk] #rank
 
 print()
-#calculate percent change in geek rating
+#calculate change in geek rating
 peaks[:,8] = (peaks[:,5]-peaks[:,1])
 #do the same with rank
 peaks[:,9] = 100*(peaks[:,7]-peaks[:,3]) / peaks[:,3]
 #sort by fall
-sordid = peaks[peaks[:,8].argsort(),:]
+#sordid = peaks[peaks[:,8].argsort(),:]
+#sort by rank fall
+sordid = peaks[peaks[:,9].argsort()[::-1],:]
 #find ones that fell rather than climbed
 fallers = sordid[:,2] < sordid[:,6]
 #grab the last data set again
 fn = latest.strftime("%Y-%m-%d.csv")
 m = pd.read_csv("bgg-ranking-historicals/"+fn).to_numpy()
 
-top = 50
 for n in range(top):
     fell = (sordid[fallers])[top-n-1]
     w = np.where(m[:,c_id] == fell[0])[0]

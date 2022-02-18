@@ -24,8 +24,9 @@ geekrating_col = 9
 voters_col = 10
 minplayer_col = 11
 maxplayer_col = 12
+stddev_col = 13
 
-num_col = 13
+num_col = 14
 
 ##
 # @brief  get xml from bgg
@@ -62,6 +63,7 @@ def getGameStats(items):
         weight = float(game.statistics.ratings.averageweight['value'])
         rankcategories = game.statistics.ratings.ranks.rank
         rating = float(game.statistics.ratings.average['value'])
+        stddev = float(game.statistics.ratings.stddev['value'])
         numratings = int(game.statistics.ratings.usersrated['value'])
         bayes = float(game.statistics.ratings.bayesaverage['value'])
         if len(rankcategories) > 1:
@@ -76,7 +78,7 @@ def getGameStats(items):
         year = int(game.yearpublished['value'])
         minplayer = int(game.minplayers['value'])
         maxplayer = int(game.maxplayers['value'])
-        row = np.array([rank,name,idnum,minlen,maxlen,weight,owned,year,rating, bayes, numratings,minplayer,maxplayer])
+        row = np.array([rank,name,idnum,minlen,maxlen,weight,owned,year,rating, bayes, numratings,minplayer,maxplayer,stddev])
         if(first):
            out = np.array([row,]) 
         else:
@@ -85,11 +87,11 @@ def getGameStats(items):
     return out
     
 def getGameStatsRowType():
-    return 'i4, object, i4, i4, i4, f4, i4, i4, f4, f4, i4, i4, i4'
+    return 'i4, object, i4, i4, i4, f4, i4, i4, f4, f4, i4, i4, i4, f4'
 
 
 def getGameStatsHeader():
-    return ("rank", "name", "id", "minlen", "maxlen", "weight", "owned", "year", "rating", "geekrating", "numvoters", "minplayers", "maxplayers")
+    return ("rank", "name", "id", "minlen", "maxlen", "weight", "owned", "year", "rating", "geekrating", "numvoters", "minplayers", "maxplayers", "rating std dev")
 
 def getStatsSlowly(ids):
     first = True
