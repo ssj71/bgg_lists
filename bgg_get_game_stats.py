@@ -45,18 +45,18 @@ def getGameXML2(ids):
 # @param items untangle object from bgg with a collecton of boardgame entries
 #
 # @return numpy array with boardgame data
-def getGameStats(items):
+def getGameStats(items, exclusions=["Unpublished Prototype","Outside the Scope of BGG"]):
     first = True
     for game in items.items.item:
         name = [name['value'] for name in game.name if name['type']=='primary'][0]
         idnum = int(game['id'])
         minlen = int(game.minplaytime['value'])
         maxlen = int(game.maxplaytime['value'])
-        #TODO: add argument to ignore unpub proto
         if maxlen <= 0:
             if minlen<=0:
-                print(".",end="")
-                continue #unpublished prototype shows up here
+                if any(name in exclusion for exclusion in exclusions):
+                    print("excluded ", name ,end=" ")
+                    continue #unpublished prototype shows up here
             maxlen = minlen
         if minlen <= 0:
             minlen = maxlen
