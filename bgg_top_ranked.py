@@ -16,6 +16,7 @@ def getNext100TRG(pagen):
 
 # grabs number of pages provided (100 entries per page)
 def getTopRankedGames( pages = 1 ):
+    print("WARNING!! This is not working! Use historicals for now!")
     top = []
     for p in range(1,1+pages):
         top.extend(getNext100TRG(p))
