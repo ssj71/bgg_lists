@@ -17,7 +17,7 @@ import bgg_get_historicals as bgg_historicals
 import math as m
 import untangle
 import time
-import urllib.request
+import urllib.parse
 import re
 
 rgame_col = 0
@@ -30,13 +30,19 @@ ntop = 100
 allname = "top_100_all_raters_23_2"
 
 try:
-    allgames = np.load(allname)
-    stats = np.load(allname+"_stats")
-    skip = True
+    allgames = np.load(allname+'.npy')
+    stats = np.load(allname+"stats.npy").astype('U100')
+    startat = np.count_nonzero(stats[:,bggstats.gameid_col])
+    if startat == ntop:
+        #TODO: if the last game gets messed up we won't get this right
+        skip = True
+    else:
+        skip = False
 except:
     allgames = np.zeros((0),'i4, U100, f4, i4') #when each game is done the resulting matrix will get appended to this array
-    stats = np.zeros((ntop,14),dtype='S')
+    stats = np.zeros((ntop,14),dtype='U100')
     skip = False
+    startat = 0
 
 top = bgg_historicals.get_date(2023,2,24)[:ntop,bgg_historicals.gameid_col]
 
@@ -44,16 +50,18 @@ top = bgg_historicals.get_date(2023,2,24)[:ntop,bgg_historicals.gameid_col]
 
 if not skip:
     #two steps
-    for g, gid in enumerate(top):
+    print("getting all ratings for games")
+    for g, gid in enumerate(top[startat:],startat):
         #first get all raters for a game
         url =  "https://boardgamegeek.com/xmlapi2/thing?id="+str(gid)+"&ratingcomments=1&stats=1"
         xml = untangle.parse(url)
         game = xml.items.item
         stats[g,:] = bggstats.getGameStats(xml)[0]
 
-        ratings = np.zeros(int(game.comments['totalitems'])+100,'i4, U100, f4, i4')
-        pages = m.ceil(len(ratings)/100) #pages 100 raters per page
-        print("game", g, gid, len(ratings), flush=True)
+        nrat = int(game.comments['totalitems'])
+        ratings = np.zeros(nrat+100,'i4, U100, f4, i4')
+        pages = m.ceil(nrat/100) #pages 100 raters per page
+        print("game", g, gid, stats[g,bggstats.name_col], nrat, flush=True)
         i = 0
         for user in game.comments.comment:
             ratings[i][rgame_col] = gid # or game['id']
@@ -62,20 +70,25 @@ if not skip:
             #don't have the date yet
             i+=1
 
-        #now repeat for the rest of the pages
-        for p in range(2,pages+1):
-            url =  "https://boardgamegeek.com/xmlapi2/thing?id=" + str(gid) + "&ratingcomments=1&page=" + str(p)
-            xml = untangle.parse(url)
-            game = xml.items.item
+        #now repeat until there are no more pages with comments
+        p = 2
+        url =  "https://boardgamegeek.com/xmlapi2/thing?id=" + str(gid) + "&ratingcomments=1&page=" + str(p)
+        xml = untangle.parse(url)
+        game = xml.items.item
+        while hasattr(game.comments,'comment'):
             print(p,end=',',flush=True)
             for user in game.comments.comment:
-                #may need to check if the rating is valid (could just be comment without rating)?
+                #TODO: check that there wasn't an overlap from a new rating being insterted and getting repeated users
                 ratings[i][rgame_col] = gid # or game['id']
                 ratings[i][ruser_col] = user['username']
                 ratings[i][rating_col] = float(user['rating'])
                 #don't have the date yet
                 i+=1
             time.sleep(2)
+            p += 1
+            url =  "https://boardgamegeek.com/xmlapi2/thing?id=" + str(gid) + "&ratingcomments=1&page=" + str(p)
+            xml = untangle.parse(url)
+            game = xml.items.item
 
         #because we don't know how many ratings all the games will have all together yet
         #we must stack. Since this will only be done 100x it's hopefully ok
@@ -83,24 +96,59 @@ if not skip:
         time.sleep(10)
         print()
 
-    np.save(allname,allgames)
-    np.save(allname+"stats",stats)
+        np.save(allname,allgames)
+        np.save(allname+"stats",stats)
     exit()
-        
 
-#now get all the pages of raters from here https://boardgamegeek.com/xmlapi2/thing?id=174430&ratingcomments=1&page=2 etc
 
-url = "https://www.boardgamegeek.com/xmlapi2/thing?id=" + ",".join(str (int(n)) for n in top) + "&stats=1"
-xml =  untangle.parse(url)
 
-stats = bggstats.getStatsSlowly(top)
-
-reduced = stats[stats[:,bggstats.voters_col].astype("int") >= votes_required,:]
-
-#the only way to do this is to get all the pages of ratings on the item (game) then get each user's
-#collection data
+#now we have a table of all voters, now we must get each user's collection data to see when they last updated their rating
 # for example https://boardgamegeek.com/xmlapi2/collection?&id=174430,161936,291457,167791&stats=1&username=Terraformer
+print("getting individual collections")
+for rater in allgames:
+    if not rater[rdate_col]:
+        #print(rater)
+        username = rater[ruser_col]
+        idx = (allgames['f1']==username).nonzero()[0]
+        usersgames = allgames[allgames['f1']==username]
+        ids = usersgames['f0']
+        #print(username)
+        #print(len(ids))
+        url = "https://boardgamegeek.com/xmlapi2/collection?&id="+",".join(str(n) for n in ids) +"&username="+urllib.parse.quote(username)
+        #print(url)
+        #print(len(ids))
+        #print(usersgames)
+        #exit()
+        xml = untangle.parse(url)
+        retry = 0
+        while not hasattr(xml,'items'):
+            time.sleep(2)
+            xml = untangle.parse(url)
+            retry += 1
+        #get rating dates and store (as sec from epoch)
+        for game in xml.items.item:
+            #print(game.status['lastmodified'], end=', ')
+            d = int(dparse.parse(game.status['lastmodified']).timestamp())
+            i = idx[usersgames['f0'] == int(game['objectid'])]
+            for j in i:
+                allgames[j][rdate_col] = d
+        #double check the line we're currently on
+        i = idx[usersgames['f0'] == rater[rgame_col]][0]
+        print(i, end=',', flush=True)
+        #print()
+        if not allgames[i][rdate_col]:
+            #somehow we didn't get the date we're looking for
+            print("got issues")
+            exit()
+        np.save(allname,allgames)
+        if not i%10:
+            time.sleep(10)
+    #else we already got them from a different game
+    #go to next user
+print("all done!")
+exit()
 
+#OLD STUFF
 #matplot.scatter(stats[:,bggstats.voters_col].astype(np.int),stats[:,bggstats.stddev_col].astype(np.float))
 #matplot.gca().set_xscale("log")
 #matplot.show()
