@@ -121,11 +121,21 @@ for rater in allgames:
         #print(usersgames)
         #exit()
         xml = untangle.parse(url)
-        retry = 0
+        retry = 1
         while not hasattr(xml,'items'):
-            time.sleep(2)
+            time.sleep(retry*3)
             xml = untangle.parse(url)
+            if retry == 2:
+                np.save(allname,allgames)
+                print('.',end='',flush=True)
+            elif retry == 10:
+                print("something wrong")
+                print(url)
+                exit()
+            elif retry > 2:
+                print('.',end='',flush=True)
             retry += 1
+
         #get rating dates and store (as sec from epoch)
         for game in xml.items.item:
             #print(game.status['lastmodified'], end=', ')
