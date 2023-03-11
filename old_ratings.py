@@ -151,9 +151,11 @@ for rater in allgames:
             #somehow we didn't get the date we're looking for
             print("got issues")
             exit()
-        np.save(allname,allgames)
         if not i%10:
+            np.save(allname,allgames)
             time.sleep(10)
+        else:
+            time.sleep(1)
     #else we already got them from a different game
     #go to next user
 print("all done!")
