@@ -107,14 +107,15 @@ if not skip:
 print("getting individual collections")
 for rater in allgames:
     if not rater[rdate_col]:
-        #print(rater)
         username = rater[ruser_col]
         idx = (allgames['f1']==username).nonzero()[0]
         usersgames = allgames[allgames['f1']==username]
         ids = usersgames['f0']
+        url = "https://boardgamegeek.com/xmlapi2/collection?&id="+",".join(str(n) for n in ids) +"&username="+urllib.parse.quote(username)
+        #these are just some debugging messages
+        #print(rater)
         #print(username)
         #print(len(ids))
-        url = "https://boardgamegeek.com/xmlapi2/collection?&id="+",".join(str(n) for n in ids) +"&username="+urllib.parse.quote(username)
         #print(url)
         #print(len(ids))
         #print(usersgames)
