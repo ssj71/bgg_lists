@@ -129,9 +129,9 @@ for rater in allgames:
                 np.save(allname,allgames)
                 print('.',end='',flush=True)
             elif retry == 10:
-                print("something wrong")
+                print("something wrong with", idx[usersgames['f0'] == rater[rgame_col]][0],'?')
                 print(url)
-                exit()
+                #exit()
             elif retry > 2:
                 print('.',end='',flush=True)
             retry += 1
@@ -149,8 +149,12 @@ for rater in allgames:
         #print()
         if not allgames[i][rdate_col]:
             #somehow we didn't get the date we're looking for
+            #could be they removed their rating OR they rated another version e.g. El Grande Big Box
             print("got issues")
-            exit()
+            print(url)
+            print(stats[stats[:,bggstats.gameid_col] == str(allgames[i][0]),bggstats.name_col])
+            print('https://boardgamegeek.com/collection/user/'+username+'?subtype=boardgame&ff=1')
+            #exit()
         if not i%10:
             np.save(allname,allgames)
             time.sleep(10)
