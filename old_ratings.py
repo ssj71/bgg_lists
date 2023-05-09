@@ -9,7 +9,7 @@ import bgg_get_game_stats as bggstats
 import bgg_top_ranked as bggtr
 import numpy as np
 import matplotlib.pyplot as matplot
-from datetime import date
+import datetime
 import dateutil.parser as dparse
 import csv
 import pandas as pd
@@ -26,6 +26,7 @@ rating_col = 2
 rdate_col = 3
 
 ntop = 100
+cutoff = 24 #months
 
 allname = "top_100_all_raters_23_2"
 
@@ -122,10 +123,18 @@ for rater in allgames:
         #exit()
         xml = untangle.parse(url)
         retry = 1
-        while not hasattr(xml,'items'):
+        done = False
+        while not done:
             time.sleep(retry*3)
             xml = untangle.parse(url)
-            if retry == 2:
+            if hasattr(xml,'errors'):
+                print()
+                print(idx[usersgames['f0'] == rater[rgame_col]][0], rater)
+                print(xml.errors.error.message.cdata)
+                print('https://boardgamegeek.com/collection/user/'+username+'?subtype=boardgame&ff=1')
+                print()
+                done = True
+            elif retry == 2:
                 np.save(allname,allgames)
                 print('.',end='',flush=True)
             elif retry == 10:
@@ -135,71 +144,152 @@ for rater in allgames:
             elif retry > 2:
                 print('.',end='',flush=True)
             retry += 1
-
-        #get rating dates and store (as sec from epoch)
-        for game in xml.items.item:
-            #print(game.status['lastmodified'], end=', ')
-            d = int(dparse.parse(game.status['lastmodified']).timestamp())
-            i = idx[usersgames['f0'] == int(game['objectid'])]
-            for j in i:
-                allgames[j][rdate_col] = d
-        #double check the line we're currently on
-        i = idx[usersgames['f0'] == rater[rgame_col]][0]
-        print(i, end=',', flush=True)
-        #print()
-        if not allgames[i][rdate_col]:
-            #somehow we didn't get the date we're looking for
-            #could be they removed their rating OR they rated another version e.g. El Grande Big Box
-            print("got issues")
-            print(url)
-            print(stats[stats[:,bggstats.gameid_col] == str(allgames[i][0]),bggstats.name_col])
-            print('https://boardgamegeek.com/collection/user/'+username+'?subtype=boardgame&ff=1')
-            #exit()
-        if not i%10:
-            np.save(allname,allgames)
-            time.sleep(10)
-        else:
-            time.sleep(1)
+            if hasattr(xml,'items'):
+                if hasattr(xml.items,'item'):
+                    #get rating dates and store (as sec from epoch)
+                    for game in xml.items.item:
+                        #print(game.status['lastmodified'], end=', ')
+                        d = int(dparse.parse(game.status['lastmodified']).timestamp())
+                        i = idx[usersgames['f0'] == int(game['objectid'])]
+                        for j in i:
+                            allgames[j][rdate_col] = d
+                    #double check the line we're currently on
+                    i = idx[usersgames['f0'] == rater[rgame_col]][0]
+                    print(i, end=',', flush=True)
+                    #print()
+                    if not allgames[i][rdate_col]:
+                        #somehow we didn't get the date we're looking for
+                        #could be they removed their rating OR they rated another version e.g. El Grande Big Box
+                        print(" got issues")
+                        print(url)
+                        print(stats[stats[:,bggstats.gameid_col] == str(allgames[i][0]),bggstats.name_col])
+                        print('https://boardgamegeek.com/collection/user/'+username+'?subtype=boardgame&ff=1')
+                        #exit()
+                    if not i%10:
+                        np.save(allname,allgames)
+                        time.sleep(10)
+                    else:
+                        time.sleep(1)
+                    done = True
+                else:
+                    #user removed their only rating
+                    print("\nuser removed rating: ", idx[usersgames['f0'] == rater[rgame_col]][0])
+                    done = True
     #else we already got them from a different game
     #go to next user
 print("all done!")
-exit()
 
-#OLD STUFF
-#matplot.scatter(stats[:,bggstats.voters_col].astype(np.int),stats[:,bggstats.stddev_col].astype(np.float))
-#matplot.gca().set_xscale("log")
-#matplot.show()
+#make a scatter plot of the ratings by date after publication
+if False:
+    nplot = 10
+    for line in stats[:nplot]:
+        game = int(line[bggstats.gameid_col])
+        today = datetime.datetime(2023,4,1).timestamp()
+        year = datetime.datetime(int(line[bggstats.year_col]),1,1).timestamp()
+        secsamonth = 60*60*24*365.25/12
+        ratings = allgames[allgames['f0'] == game]
+        rsrt = ratings[ratings['f3'].argsort()]
+        start = rsrt[100]['f3'] #everything relative to the date of the 100th rating
+        rsrt['f3'] = (rsrt['f3']-start)/secsamonth
+        avgs = np.zeros(m.ceil(max(rsrt['f3'])))
+        b4time = (rsrt['f3']<0).nonzero()[0]
+        if len(b4time):
+            eom = b4time[-1]
+            avgs[0] = np.mean(rsrt[:eom]['f2'])
+        else:
+            avgs[0] = 5.5
+        for mo in range(1,len(avgs)):
+            neom = (rsrt['f3']<=mo).nonzero()[0][-1]
+            if eom != neom:
+                avgs[mo] = np.mean(rsrt[eom:neom]['f2'])
+            else:
+                avgs[mo] = avgs[mo-1]
+            eom = neom
 
-sortd = reduced[reduced[:,bggstats.stddev_col].argsort(),:]
-print(reduced.shape, stats.shape)
-print("\n\ngames we all agree on:")
-for i in range(55):
-    game = sortd[i]
-    print()
-    print()
-    print(game[bggstats.gameid_col])
-    print(i+1)
-    print(game[bggstats.name_col], " (", game[bggstats.year_col], ")", sep="")
-    print("Current Rank: %i" % int(game[bggstats.rank_col]))
-    print("Average Rating: %.3f" % float(game[bggstats.rating_col]))
-    print("Std. Dev.: %.3f" % float(game[bggstats.stddev_col]))
-    print("Votes: %i" % int(game[bggstats.voters_col]))
+        #matplot.scatter(rsrt['f3'],rsrt['f2'])
+        matplot.plot(avgs)
 
-print("\n\n\n\n****************************************************")
-print("\n\n\n\ngames we can't agree on:")
+    matplot.legend(stats[:nplot,bggstats.name_col])
+    matplot.ylabel('rating')
+    matplot.xlabel('months')
+    matplot.title('average rating per month after 100 ratings')
+    matplot.show()
 
-revsort = sortd[::-1,:]
-for i in range(55):
-    game = revsort[i]
-    print()
-    print()
-    print(game[bggstats.gameid_col])
-    print(i+1)
-    print(game[bggstats.name_col], " (", game[bggstats.year_col], ")", sep="")
-    print("Current Rank: %i" % int(game[bggstats.rank_col]))
-    print("Average Rating: %.3f" % float(game[bggstats.rating_col]))
-    print("Std. Dev.: %.3f" % float(game[bggstats.stddev_col]))
-    print("Votes: %i" % int(game[bggstats.voters_col]))
+#store game ids, average, adjusted, votes, rm votes and new GR
+gidcol = 0
+avgcol = 1
+adjcol = 2
+votcol = 3
+nvtcol = 4
+ngrcol = 5
+i = 0
+store = np.zeros([len(stats),6])
+for line in stats:
+    game = int(line[bggstats.gameid_col])
+    today = datetime.datetime(2023,4,20).timestamp()
+    year = datetime.datetime(int(line[bggstats.year_col]),1,1).timestamp()
+    secsamonth = 60*60*24*365.25/12
+    ratings = allgames[allgames['f0'] == game]
+    rsrt = ratings[ratings['f3'].argsort()]
+    #convert everything to months relative to the date of the 100th rating
+    start = rsrt[100]['f3']
+    rsrt['f3'] = (rsrt['f3']-start)/secsamonth
+
+    if max(rsrt['f3']) >= cutoff:
+        avg = np.mean(rsrt['f2'])
+        adjavg = np.mean(rsrt[rsrt['f3']>=cutoff]['f2'])
+
+        store[i,gidcol] = game
+        store[i,avgcol] = avg
+        store[i,adjcol] = adjavg
+        store[i,votcol] = len(rsrt)
+        store[i,nvtcol] = np.count_nonzero(rsrt['f3']>=cutoff)
+        store[i,ngrcol] = float(line[bggstats.geekrating_col])*adjavg/avg
+        i += 1
+
+#sort
+stort = store[store[:,ngrcol].argsort()]
+i = 1
+print(stort.shape)
+for stuff in stort[-1:-16:-1]: #stort[-52:-1:,:]:
+    if stuff[0]:
+        line = stats[stats[:,bggstats.gameid_col]==str(int(stuff[gidcol]))][0]
+        print()
+        print()
+        print(line[bggstats.gameid_col])
+        dif = int(line[bggstats.rank_col]) - i
+        s = "(+"+str(dif)+")" if dif > 0 else "("+str(dif)+")"
+        print(line[bggstats.name_col], " (", line[bggstats.year_col], ")", sep="")
+        print("Adjusted Stats:")
+        print("  Rank:",i,s)
+        print("  GeekRating: %.3f" % stuff[ngrcol])
+        print("  Avg. Rating: %.3f (%.3f%%)" % (stuff[adjcol], 100.0*(stuff[adjcol]/stuff[avgcol]-1.0)))
+        print("  Votes: %i (%i)" % (stuff[nvtcol], stuff[nvtcol]-stuff[votcol]))
+        print()
+        print("Original Stats:")
+        print("  Rank: %i" % int(line[bggstats.rank_col]))
+        print("  GeekRating: %.3f" % float(line[bggstats.geekrating_col]))
+        print("  Avg. Rating: %.3f" % stuff[avgcol])
+        print("  Votes: %i" % stuff[votcol])
+        i += 1
+
+
+print("\nThose that didn't make it:")
+
+for stuff in stort[:50]:
+    if stuff[gidcol]:
+        line = stats[stats[:,bggstats.gameid_col]==str(int(stuff[gidcol]))][0]
+        #if int(line[bggstats.rank_col])<=50:
+        print(line[bggstats.rank_col], line[bggstats.name_col], " (%s, %.3f)" % (line[bggstats.year_col], 100.0*(stuff[adjcol]/stuff[avgcol]-1.0)))
+            #print("  Votes: %i (%i)" % (stuff[nvtcol], stuff[nvtcol]-stuff[votcol]))
+
+print("\n too new")
+for line in stats:
+    if float(line[bggstats.gameid_col]) in stort[:,gidcol]:
+        pass
+    else:
+        print(line[bggstats.rank_col],line[bggstats.name_col], line[bggstats.year_col])
+
 
 print("done.")
 
